@@ -5,13 +5,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    image: docuseal/docuseal:latest
+    image: docuseal/local
     ports:
       - 3000:3000
     volumes:
       - .:/data
     environment:
-      - FORCE_SSL=${HOST}
+  
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/docuseal
 
   postgres:
@@ -28,14 +28,4 @@ services:
       timeout: 5s
       retries: 5
 
-  caddy:
-    image: caddy:latest
-    command: caddy reverse-proxy --from $HOST --to app:3000
-    ports:
-      - 80:80
-      - 443:443
-      - 443:443/udp
-    volumes:
-      - .:/data
-    environment:
-      - HOST=${HOST}
+
