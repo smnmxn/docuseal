@@ -3,16 +3,29 @@ version: '3'
 services:
   app:
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
+      - redis
     image: docuseal/local
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - .:/data
     environment:
-  
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/docuseal
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/docuseal
+      REDIS_URL: redis://redis:6379/0
+
+  sidekiq:
+    depends_on:
+      - postgres
+      - redis
+    image: docuseal/local
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    volumes:
+      - .:/data
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/docuseal
+      REDIS_URL: redis://redis:6379/0
+    working_dir: /app
 
   postgres:
     image: postgres:15
@@ -28,4 +41,10 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:6
+    volumes:
+      - 'redis_data:/data'
 
+volumes:
+  redis_data:
